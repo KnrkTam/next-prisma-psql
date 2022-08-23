@@ -19,6 +19,29 @@ export default function Home() {
   const togglePasswordShown = () => {
     setPasswordShown(!passwordShown);
   };
+
+  async function create(data: FormData) {
+    try {
+      fetch("http://localhost:3000/api/create", {
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      }).then(() => setForm({ username: "", password: "", id: "" }));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const handleSubmit = async (data: FormData) => {
+    try {
+      create(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <main className="flex flex-col m-10">
@@ -30,6 +53,7 @@ export default function Home() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              handleSubmit(form);
             }}
             className="m-auto space-y-1"
           >
@@ -66,9 +90,9 @@ export default function Home() {
             <div className="flex flex-col text-center">
               <button
                 type="submit"
-                className="transition cursor-pointer bg-green-500 text-white hover:bg-green-600 hover:scale-110 rounded-3xl m-2 p-3 mt-10 "
+                className="transition font-bold cursor-pointer bg-green-500 text-white hover:bg-green-600 hover:scale-110 rounded-3xl m-2 p-3 mt-10 "
               >
-                Submit
+                Login
               </button>
             </div>
           </form>
