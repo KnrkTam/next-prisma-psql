@@ -2,6 +2,16 @@ import { useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import toast from "react-hot-toast";
+import { useRouter } from "next/router";
+import { prisma } from "../lib/prisma";
+import { GetServerSideProps } from "next";
+
+interface Users {
+  users: {
+    username: string;
+    id: string;
+  }[];
+}
 
 interface FormData {
   username: string;
@@ -9,23 +19,30 @@ interface FormData {
   email: string;
   id: string;
 }
-export default function Signup() {
+export default function Signup({ users }: Users) {
   const [form, setForm] = useState<FormData>({
     username: "",
     email: "",
     password: "",
     id: "",
   });
+  let usernames: string[] = [];
+  users.map((user) => {
+    usernames.push(user.username);
+    // return usernames;
+  });
 
+  console.log(usernames);
   const mail_format = /\S+@\S+\.\S+/;
-
   const [confirmPassword, setConfirmPassword] = useState("");
   const isUserNameValid = form.username.length > 3 && form.username.length < 20;
+  const isUserNameRepeated = usernames.includes(form.username);
   const isPasswordValid =
     form.password.length > 5 && form.password == confirmPassword;
   const isEmailValid = mail_format.test(form.email);
 
-  const isValid = isUserNameValid && isPasswordValid && isEmailValid;
+  const isValid = isUserNameValid && isPasswordValid && isEmailValid && !isUserNameRepeated;
+  const router = useRouter();
   async function createUser(data: FormData) {
     try {
       fetch("http://localhost:3000/api/createUser", {
@@ -34,12 +51,13 @@ export default function Signup() {
           "Content-Type": "application/json",
         },
         method: "POST",
-      })
-        .then(() => {
-          toast.success("Signed up successfully !");
-        })
-        .then(() => setForm({ username: "", email: "", password: "", id: "" }))
-        .then(() => setConfirmPassword(""));
+      }).then(() => {
+        setTimeout(() => {
+          router.push("/");
+        }, 3000);
+      });
+      // .then(() => setForm({ username: "", email: "", password: "", id: "" }))
+      // .then(() => setConfirmPassword(""));
     } catch (e) {
       console.error(e);
     }
@@ -57,23 +75,26 @@ export default function Signup() {
 
   const handleSubmit = async (data: FormData) => {
     try {
-      createUser(data);
+      toast.promise(createUser(data), {
+        loading: "Saving...",
+        success: (
+          <b>Signed up successfully! You will be redirect to login page</b>
+        ),
+        error: <b>Failed to Sign up</b>,
+      });
     } catch (error) {
       console.log(error);
     }
   };
 
-  const showToast = () => {
-    toast.success("Test toast!");
-    console.log("toast");
-  };
-
   return (
     <>
       <main className="flex flex-col m-10">
-        {/* <button type="button" onClick={showToast}>
-          Toast
-        </button> */}
+        <div>
+          {/* {users.map((user) => {
+            return <p key={user.id}>{user.username}</p>;
+          })} */}
+        </div>
         <h1 className="text-center m-10 font-extrabold text-[5vw] animate-in fade-in duration-700 ">
           {" "}
           Create new account now !
@@ -84,6 +105,11 @@ export default function Signup() {
             {!isUserNameValid && (
               <span className="text-red-500">
                 Username must exceed 3 characters
+              </span>
+            )}
+            {isUserNameRepeated && (
+              <span className="text-red-500">
+                Username has been used 
               </span>
             )}
             {!isPasswordValid && (
@@ -178,3 +204,18 @@ export default function Signup() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      username: true,
+      // password: true,
+    },
+  });
+  return {
+    props: {
+      users,
+    },
+  };
+};
