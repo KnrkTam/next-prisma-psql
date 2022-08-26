@@ -5,6 +5,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
+const jwt = require("jsonwebtoken");
 
 interface FormData {
   username: string;
@@ -32,23 +33,29 @@ export default function Home() {
       },
       method: "POST",
     });
+    const res = await checkAuthJSON.json();
 
     if (checkAuthJSON.status === 200) {
-      const checkAuth = await checkAuthJSON.json();
-      if (checkAuth.login === "success") {
-          toast.success("login successfully" );
-          setTimeout(() => {
-            router.push("/dashboard/user");        
-          }, 3000)
+      if (res.login === "success") {
+        const token = res.token; 
+
+        if (token) {
+          const json = jwt.decode(token)
+          toast.success(`Welcome back ${json.username}! Redirecting to the user dashboard`);
+        }
+
+        setTimeout(() => {
+          router.push("/dashboard/user");
+        }, 2000);
+        return;
       }
-      toast.error('login failed')
     }
-    return toast.error("user not found");
+    return toast.error(res .login);
   }
 
   const handleSubmit = async (data: FormData) => {
     try {
-        checkUserAuth(data)
+      checkUserAuth(data);
     } catch (error) {
       console.log(error);
     }

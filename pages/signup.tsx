@@ -6,10 +6,9 @@ import { useRouter } from "next/router";
 import { prisma } from "../lib/prisma";
 import { GetServerSideProps } from "next";
 
-
 interface Users {
   users: {
-    email:string;
+    email: string;
     username: string;
     id: string;
   }[];
@@ -47,7 +46,12 @@ export default function Signup({ users }: Users) {
 
   const isEmailValid = mail_format.test(form.email);
 
-  const isValid = isUserNameValid && isPasswordValid && isEmailValid && !isUserNameRepeated && !isEmailRepeated;
+  const isValid =
+    isUserNameValid &&
+    isPasswordValid &&
+    isEmailValid &&
+    !isUserNameRepeated &&
+    !isEmailRepeated;
   const router = useRouter();
   async function createUser(data: FormData) {
     try {
@@ -92,6 +96,8 @@ export default function Signup({ users }: Users) {
       console.log(error);
     }
   };
+
+  const backToLogin = () => router.push("/login");
 
   return (
     <>
@@ -206,6 +212,15 @@ export default function Signup({ users }: Users) {
               </button>
             </div>
           </form>
+          <div className="p-2">
+            <button
+              type="button"
+              onClick={backToLogin}
+              className="transition fotn-bold cursor-pointer bg-green-500 text-white hover:bg-green-700 hover:scale-110 rounded-3xl m-2 p-3 mt-10 "
+            >
+              Back to Login
+            </button>
+          </div>
         </div>
       </main>
     </>
@@ -217,7 +232,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     select: {
       id: true,
       username: true,
-      email:true,
+      email: true,
       // password: true,
     },
   });
