@@ -5,7 +5,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import toast from "react-hot-toast";
 import { useRouter } from "next/router";
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 interface FormData {
   username: string;
@@ -40,7 +40,7 @@ export default function Home() {
         const token = res.token; 
 
         if (token) {
-          const json = jwt.decode(token)
+          const json:{username?:string, status?: string} = jwt.decode(token)
           toast.success(`Welcome back ${json.username}! Redirecting to the user dashboard`);
         }
 
