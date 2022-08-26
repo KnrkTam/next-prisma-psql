@@ -16,9 +16,7 @@ export default function Home() {
   });
   const [passwordShown, setPasswordShown] = useState(false);
 
-  const togglePasswordShown = () => {
-    setPasswordShown(!passwordShown);
-  };
+
 
   async function create(data: FormData) {
     try {
@@ -68,25 +66,7 @@ export default function Home() {
                 className="border-2 shadow border-gray-500 p-1"
               />
             </div>
-            <div className="flex items-center space-x-2 ">
-              <label htmlFor="password">Password: </label>
-              <input
-                id="password"
-                type={passwordShown ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="border-2 shadow border-gray-500 p-1"
-              ></input>
-              <button
-                className="z-40 w-5 h-5 cursor-pointer"
-                type="button"
-                onClick={togglePasswordShown}
-              >
-                {passwordShown ? <VisibilityOffIcon /> : <VisibilityIcon />}
-              </button>
-            </div>
+           
             <div className="flex flex-col text-center">
               <button
                 type="submit"

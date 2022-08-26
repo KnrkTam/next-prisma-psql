@@ -6,8 +6,10 @@ import { useRouter } from "next/router";
 import { prisma } from "../lib/prisma";
 import { GetServerSideProps } from "next";
 
+
 interface Users {
   users: {
+    email:string;
     username: string;
     id: string;
   }[];
@@ -27,21 +29,25 @@ export default function Signup({ users }: Users) {
     id: "",
   });
   let usernames: string[] = [];
+  let emails: string[] = [];
   users.map((user) => {
     usernames.push(user.username);
-    // return usernames;
+    emails.push(user.email);
   });
 
-  console.log(usernames);
+  // Validation
   const mail_format = /\S+@\S+\.\S+/;
   const [confirmPassword, setConfirmPassword] = useState("");
   const isUserNameValid = form.username.length > 3 && form.username.length < 20;
   const isUserNameRepeated = usernames.includes(form.username);
+  const isEmailRepeated = emails.includes(form.email);
+
   const isPasswordValid =
     form.password.length > 5 && form.password == confirmPassword;
+
   const isEmailValid = mail_format.test(form.email);
 
-  const isValid = isUserNameValid && isPasswordValid && isEmailValid && !isUserNameRepeated;
+  const isValid = isUserNameValid && isPasswordValid && isEmailValid && !isUserNameRepeated && !isEmailRepeated;
   const router = useRouter();
   async function createUser(data: FormData) {
     try {
@@ -53,7 +59,7 @@ export default function Signup({ users }: Users) {
         method: "POST",
       }).then(() => {
         setTimeout(() => {
-          router.push("/");
+          router.push("/login");
         }, 3000);
       });
       // .then(() => setForm({ username: "", email: "", password: "", id: "" }))
@@ -108,9 +114,10 @@ export default function Signup({ users }: Users) {
               </span>
             )}
             {isUserNameRepeated && (
-              <span className="text-red-500">
-                Username has been used 
-              </span>
+              <span className="text-red-500">Username has been used</span>
+            )}
+            {isEmailRepeated && (
+              <span className="text-red-500">Email has been registered</span>
             )}
             {!isPasswordValid && (
               <span className="text-red-500">Password invalid</span>
@@ -210,6 +217,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     select: {
       id: true,
       username: true,
+      email:true,
       // password: true,
     },
   });
