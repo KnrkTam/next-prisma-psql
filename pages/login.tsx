@@ -12,7 +12,7 @@ interface FormData {
   password: string;
 }
 
-export default function Home() {
+export default function LoginPage () {
   const [form, setForm] = useState<FormData>({
     username: "",
     password: "",
@@ -25,37 +25,58 @@ export default function Home() {
     setPasswordShown(!passwordShown);
   };
 
-  async function checkUserAuth(data: FormData) {
-    const checkAuthJSON = await fetch("http://localhost:3000/api/loginAuth", {
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
-    const res = await checkAuthJSON.json();
+  async function login(data: FormData) {
+    try {
+      await fetch("http://localhost:3000/api/loginAuth", {
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      }).then((res) => {
+        res.json().then((data)  => {
+          if (data.login === "success") {
+            const token = data.token;
+            if (token) {
+              const jwtJson:any  = jwt.decode(token)
 
-    if (checkAuthJSON.status === 200) {
-      if (res.login === "success") {
-        const token = res.token; 
+              toast.success(
+                `Welcome back ${jwtJson.username}! Redirecting to the user dashboard`
+              );
+            }
 
-        if (token) {
-          const json:{username?:string, status?: string} = jwt.decode(token)
-          toast.success(`Welcome back ${json.username}! Redirecting to the user dashboard`);
-        }
-
-        setTimeout(() => {
-          router.push("/dashboard/user");
-        }, 2000);
-        return;
-      }
+          }
+          console.log(data);
+        })
+        
+      });
+    } catch (err) {
+      console.log(err);
     }
-    return toast.error(res .login);
+  
   }
+    // const res = await checkAuthJSON.json();
+
+  //   if (checkAuthJSON.status === 200) {
+  //     if (res.login === "success") {
+  //       const token = res.token; 
+
+  //       if (token) {
+  //         toast.success(`Welcome back ${json.username}! Redirecting to the user dashboard`);
+  //       }
+
+  //       setTimeout(() => {
+  //         router.push("/dashboard/user");
+  //       }, 2000);
+  //       return;
+  //     }
+  //   }
+  //   return toast.error(res .login);
+  // }
 
   const handleSubmit = async (data: FormData) => {
     try {
-      checkUserAuth(data);
+      login(data);
     } catch (error) {
       console.log(error);
     }
